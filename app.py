@@ -2,13 +2,13 @@
 from collections import OrderedDict
 
 from flask import Flask
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 import config
-from views import backend, json_api
 from ext import db, mako
 from libs.rdstore import cache
 from libs.session import RedisSessionInterface
+from views import backend, json_api
 
 
 def create_app():
@@ -28,7 +28,6 @@ def create_app():
 
 
 app = create_app()
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8100, debug=app.debug)

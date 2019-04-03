@@ -32,7 +32,7 @@ def parser_artist(artist_id):
     if process.is_success:
         return
 
-    print 'Starting fetch artist: {}'.format(artist_id)
+    print('Starting fetch artist: {}'.format(artist_id))
     start = time.time()
     process = Process.get_or_create(id=artist_id)
 
@@ -47,18 +47,19 @@ def parser_artist(artist_id):
         artist.save()
     else:
         artist = artist[0]
-    song_items = tree.xpath('//div[@id="artist-top50"]//ul/li/a/@href')
+    song_items = tree.xpath('//ul[@class="f-hide"]//a')
     songs = []
     for item in song_items:
-        song_id = item.split('=')[1]
+        song_id = item.xpath('@href')[0][9:]
         song = parser_song(song_id, artist)
+        print(song_id)
         if song is not None:
             songs.append(song)
     artist.songs = songs
     artist.save()
     process.make_succeed()
-    print 'Finished fetch artist: {} Cost: {}'.format(
-        artist_id, time.time() - start)
+    print('Finished fetch artist: {} Cost: {}'.format(
+        artist_id, time.time() - start))
 
 
 def parser_song(song_id, artist):
@@ -66,7 +67,7 @@ def parser_song(song_id, artist):
     song = Song.objects.filter(id=song_id)
     r = post(COMMENTS_URL.format(song_id))
     if r.status_code != 200:
-        print 'API Error: Song {}'.format(song_id)
+        print('API Error: Song {}'.format(song_id))
         return
     data = r.json()
     if not song:
@@ -81,7 +82,7 @@ def parser_song(song_id, artist):
                 song_name = tree.xpath(
                     '//meta[@name="keywords"]/@content')[0].strip()
             except IndexError:
-                print 'Fetch limit!'
+                print('Fetch limit!')
                 time.sleep(10)
                 return parser_song(song_id, artist)
         song = Song(id=song_id, name=song_name, artist=artist,

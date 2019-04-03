@@ -111,7 +111,7 @@ class Comment(BaseModel):
         return self.user.url
 
     @property
-    def user_url(self):
+    def artist_url(self):
         return self.song.artist_url
 
     @classmethod

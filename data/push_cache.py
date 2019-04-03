@@ -1,5 +1,6 @@
-#coding=utf-8
+# coding=utf-8
 import sys
+
 sys.path.insert(0, '.')
 
 from app import create_app
@@ -22,15 +23,14 @@ for name in songs + artists:
 
 # suggest预热
 for text in text_set:
-    print 'cache suggest', text
+    print('cache suggest', text)
     suggest(text)
 
 # search预热
 for song in Song.objects.all():
-    print 'cache search song', song.id
+    print('cache search song', song.id)
     search(song.id, 'song')
 
 for artist in Artist.objects.all():
-    print 'cache search artist', artist.id
+    print('cache search artist', artist.id)
     search(artist.id, 'artist')
-                                            
