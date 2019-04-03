@@ -1,1 +1,1 @@
-from api import json_api  # noqa
+from .api import json_api  # noqa
