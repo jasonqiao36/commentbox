@@ -2,12 +2,16 @@ import time
 
 from app import create_app
 from models import Artist, Song, Comment, User, Process
+from spider.config import get_crawl_interal
+from spider.log import crawler
 from spider.utils import get_tree, post
 
 DISCOVER_URL = 'http://music.163.com/discover/artist/cat?id={}&initial={}'
 ARTIST_URL = 'http://music.163.com/artist?id={}'
 SONG_URL = 'http://music.163.com/song?id={}'
 COMMENTS_URL = 'http://music.163.com/weapi/v1/resource/comments/R_SO_4_{}'  # noqa
+
+INTERNAL = get_crawl_interal()
 
 
 def parser_artist_list(cat_id, initial_id):
@@ -29,7 +33,7 @@ def parser_artist(artist_id):
     if process.is_success:
         return
 
-    print('Starting fetch artist: {}'.format(artist_id))
+    crawler.info('Starting fetch artist: {}'.format(artist_id))
     start = time.time()
     process = Process.get_or_create(id=artist_id)
 
@@ -49,13 +53,12 @@ def parser_artist(artist_id):
     for item in song_items:
         song_id = item.xpath('@href')[0][9:]
         song = parser_song(song_id, artist)
-        print(song_id)
         if song is not None:
             songs.append(song)
     artist.songs = songs
     artist.save()
     process.make_succeed()
-    print('Finished fetch artist: {} Cost: {}'.format(
+    crawler.info('Finished fetch artist: {} Cost: {}'.format(
         artist_id, time.time() - start))
 
 
@@ -64,17 +67,19 @@ def parser_song(song_id, artist):
     song = Song.objects.filter(id=song_id)
     r = post(COMMENTS_URL.format(song_id))
     if r.status_code != 200:
-        print('API Error: Song {}'.format(song_id))
+        crawler.error('API Error: Song {}'.format(song_id))
         return
     data = r.json()
 
     code = data.get('code')
     if code != 200:
-        print('Cheating, {} {}'.format(code, data.get('msg')))
+        crawler.error('Cheating, {}'.format(data))
         return
+
     if not song:
         for404 = tree.xpath('//div[@class="n-for404"]')
         if for404:
+            crawler.error('Cheating, for 404')
             return
 
         try:
@@ -84,7 +89,7 @@ def parser_song(song_id, artist):
                 song_name = tree.xpath(
                     '//meta[@name="keywords"]/@content')[0].strip()
             except IndexError:
-                print('Fetch limit!')
+                crawler.error('Fetch limit!')
                 time.sleep(10)
                 return parser_song(song_id, artist)
         song = Song(id=song_id, name=song_name, artist=artist,
@@ -109,5 +114,5 @@ def parser_song(song_id, artist):
         comments.append(comment)
     song.comments = comments
     song.save()
-    time.sleep(1)
+    time.sleep(INTERNAL)
     return song

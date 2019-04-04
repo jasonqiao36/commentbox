@@ -6,6 +6,7 @@ from lxml import etree
 
 from config import PROXIES
 from spider.encrypt import gen_data, gen_cookies
+from spider.log import crawler
 
 TIMEOUT = 5
 
@@ -22,7 +23,7 @@ def get_user_agent():
 
 
 def fetch(url, retry=0):
-    print(url)
+    crawler.info(url)
     s = requests.Session()
     proxies = {
         'http': choice_proxy()
