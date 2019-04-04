@@ -1,11 +1,8 @@
 import time
 
-from mongoengine.connection import disconnect
-
-from models import Artist, Song, Comment, User, Process
 from app import create_app
-
-from spider.utils import get_user_agent, get_tree, post
+from models import Artist, Song, Comment, User, Process
+from spider.utils import get_tree, post
 
 DISCOVER_URL = 'http://music.163.com/discover/artist/cat?id={}&initial={}'
 ARTIST_URL = 'http://music.163.com/artist?id={}'
@@ -70,6 +67,11 @@ def parser_song(song_id, artist):
         print('API Error: Song {}'.format(song_id))
         return
     data = r.json()
+
+    code = data.get('code')
+    if code != 200:
+        print('Cheating, {} {}'.format(code, data.get('msg')))
+        return
     if not song:
         for404 = tree.xpath('//div[@class="n-for404"]')
         if for404:

@@ -4,6 +4,9 @@ import binascii
 import codecs
 import json
 import os
+import random
+import string
+import time
 
 from Crypto.Cipher import AES
 
@@ -45,3 +48,22 @@ def gen_data():
         'encSecKey': encSecKey
     }
     return data
+
+
+def create_randomString(stringLength):
+    lettersAndDigits = string.ascii_letters + string.digits
+    return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+
+
+# 参考：https://github.com/Binaryify/NeteaseCloudMusicApi/issues/289
+def gen_cookies():
+    jsessionid = create_randomString(184) + '%3A' + str(int(time.time() * 1000))
+    ntes_nuid = create_randomString(32)
+    ntes_nnid = ntes_nuid + str(int(time.time() * 1000))
+    cookies = {
+        "JSESSIONID-WYYY": jsessionid,
+        "_iuqxldmzr_": '32',
+        "_ntes_nnid": ntes_nnid,
+        "_ntes_nuid": ntes_nuid,
+    }
+    return cookies

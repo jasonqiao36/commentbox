@@ -5,7 +5,7 @@ from fake_useragent import UserAgent
 from lxml import etree
 
 from config import PROXIES
-from spider.encrypt import gen_data
+from spider.encrypt import gen_data, gen_cookies
 
 TIMEOUT = 5
 
@@ -43,8 +43,16 @@ def post(url):
     headers = {
         "Referer": "https://music.163.com",
         "User-Agent": get_user_agent(),
+        'Host': 'music.163.com',
+        'Proxy-Connection': 'keep-alive',
+        'Origin': 'https://music.163.com',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.8'
     }
-    return requests.post(url, headers=headers, data=gen_data())
+    cookies = gen_cookies()
+    return requests.post(url, headers=headers, cookies=cookies, data=gen_data())
 
 
 def get_tree(url):
